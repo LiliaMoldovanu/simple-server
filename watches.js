@@ -1,26 +1,20 @@
-const Chance = require("chance")
-const express = require("express")
+const Chance = require("chance");
+const express = require("express");
 
-const watchesRoutes = express.Router()
-const chance = new Chance()
+const watchesRoutes = express.Router();
+const chance = new Chance();
 
-const generateColor = () =>
-  chance
-    .color({ format: "hex" })
-    .replace("#", "")
-    .toUpperCase()
-
-const watches = Array.from({ length: 25 }, (_, i) => {
+function createWatch(watch = {}) {
   const name = chance.pickone([
     "Rolex",
     "Vacheron Constantin",
     "Patek Philippe",
     "Hublot",
     "Louis Moinet"
-  ])
+  ]);
 
-  const startColor = generateColor()
-  const endColor = generateColor()
+  const startColor = generateColor();
+  const endColor = generateColor();
 
   return {
     id: chance.guid(),
@@ -65,18 +59,45 @@ const watches = Array.from({ length: 25 }, (_, i) => {
         "brown",
         "black"
       ])
-    }
-  }
-})
+    },
+    ...watch
+  };
+}
+
+const generateColor = () =>
+  chance
+    .color({ format: "hex" })
+    .replace("#", "")
+    .toUpperCase();
+
+const watches = Array.from({ length: 25 }, (_, i) => createWatch());
 
 watchesRoutes.get("/", (req, res) => {
-  res.json(watches)
-})
+  res.json(watches);
+});
 
 watchesRoutes.get("/:todoId", (req, res) => {
-  const watchId = req.params.todoId
+  const watchId = req.params.todoId;
 
-  res.json(watches.find(w => w.id == watchId))
-})
+  res.json(watches.find(w => w.id == watchId));
+});
 
-module.exports = watchesRoutes
+watchesRoutes.post("/", (req, res) => {
+  const newWatch = createWatch(req.body);
+  watches.push(newWatch);
+
+  res.json(newWatch);
+});
+
+// watchesRoutes.patch("/:todoId", (req, res) => {
+//   const watchId = req.params.todoId;
+//   const { description, name, price } = req.body;
+
+//   watches = watches.map(w =>
+//     w.id == watchId ? { ...t, description, name, price } : t
+//   );
+
+//   res.send(watches.find(w => w.id == watchId));
+// });
+
+module.exports = watchesRoutes;
